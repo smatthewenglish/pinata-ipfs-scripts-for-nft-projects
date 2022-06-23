@@ -25,6 +25,7 @@ SOFTWARE.
 
 require('dotenv').config();
 
+const Bottleneck = require('bottleneck');
 const { PINATA_API_KEY, PINATA_API_SECRET } = process.env;
 const fs = require('fs-extra');
 const pinataSDK = require('@pinata/sdk');
@@ -33,7 +34,22 @@ const { PinSatus } = require('./utils');
 const { log, table: logTable, error } = console;
 
 (async () => {
-  const pinata = pinataSDK(PINATA_API_KEY, PINATA_API_SECRET);
+  //const pinata = pinataSDK(PINATA_API_KEY, PINATA_API_SECRET);
+  const pinata = pinataSDK('bec50b3577c3a1f7a6da', 'b1993feb74da315395fed93d5cfc01970a713dcd1c149b364ea70ce3fc1e77d7');
+
+
+
+  /**
+   * Set rate limiting close to the maximum of 180 requests / minute.
+   * These values can be modified to fit your needs while staying
+   * within the rate limit range to avoid HTTP 429 errors.
+   *
+   * Pinata Rate Limit: https://docs.pinata.cloud/rate-limits
+   */
+   const rateLimiter = new Bottleneck({
+    maxConcurrent: 1,
+    minTime: 1000, // Once every 3 seconds
+  });
   /**
    * Get a page of results from Pinata of all pinned files mapped with IPFS CIDs.
    *
@@ -87,7 +103,12 @@ const { log, table: logTable, error } = console;
     log('Requesting Pinata CID data...');
     while (hasMoreResults) {
       // eslint-disable-next-line no-await-in-loop
-      const { mapping, count } = await getFileCIDMappings(PIN_STATUS, pageOffset, MAX_PAGE_LIMIT);
+      const { mapping, count } = await rateLimiter.schedule(() => getFileCIDMappings(PIN_STATUS, pageOffset, MAX_PAGE_LIMIT));
+
+//await rateLimiter.schedule(() => uploadFile(fileName, filePath));
+//}),
+
+
       if (count === 0) {
         break;
       }

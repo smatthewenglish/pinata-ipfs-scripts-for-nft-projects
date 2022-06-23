@@ -25,7 +25,7 @@ SOFTWARE.
 
 require('dotenv').config();
 
-const { PINATA_API_KEY, PINATA_API_SECRET } = process.env;
+//const { PINATA_API_KEY, PINATA_API_SECRET } = process.env;
 const fs = require('fs-extra');
 const recursive = require('recursive-fs');
 const Bottleneck = require('bottleneck');
@@ -40,7 +40,7 @@ const { log, error } = console;
    * a file that may have already been uploaded and the CID is known.
    */
   const pinataCIDs = fs.readJsonSync('./output/downloaded-cids.json') || {};
-  const pinata = pinataSDK(PINATA_API_KEY, PINATA_API_SECRET);
+  const pinata = pinataSDK('bec50b3577c3a1f7a6da', 'b1993feb74da315395fed93d5cfc01970a713dcd1c149b364ea70ce3fc1e77d7');
 
   /**
    * Set rate limiting close to the maximum of 180 requests / minute.
